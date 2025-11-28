@@ -1,0 +1,22 @@
+2025-11-28 08:01:33 - INFO - HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+2025-11-28 08:01:49 - INFO - HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2025-11-28 08:01:49 - INFO - HTTP Request: GET https://www.googleapis.com/oauth2/v3/certs "HTTP/1.1 200 OK"
+2025-11-28 08:01:49 - INFO - Пользователь успешно добавлен с ID: 21
+2025-11-28 08:01:49 - INFO - Сессия добавлена
+2025-11-28 08:08:09 - INFO - HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+2025-11-28 08:09:01 - INFO - HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+2025-11-28 08:09:03 - INFO - HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2025-11-28 08:09:03 - INFO - HTTP Request: GET https://www.googleapis.com/oauth2/v3/certs "HTTP/1.1 200 OK"
+2025-11-28 08:09:16 - INFO - HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2025-11-28 08:09:16 - INFO - Пользователь успешно добавлен с ID: 22
+2025-11-28 08:09:16 - INFO - Сессия добавлена
+2025-11-28 08:18:58 - INFO - HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+2025-11-28 08:19:00 - INFO - HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2025-11-28 08:19:00 - INFO - HTTP Request: GET https://www.googleapis.com/oauth2/v3/certs "HTTP/1.1 200 OK"
+2025-11-28 08:19:00 - INFO - Пользователь успешно добавлен с ID: 23
+2025-11-28 08:19:00 - INFO - Сессия добавлена
+2025-11-28 08:23:03 - INFO - HTTP Request: GET https://accounts.google.com/.well-known/openid-configuration "HTTP/1.1 200 OK"
+2025-11-28 08:23:05 - INFO - HTTP Request: POST https://oauth2.googleapis.com/token "HTTP/1.1 200 OK"
+2025-11-28 08:23:05 - INFO - HTTP Request: GET https://www.googleapis.com/oauth2/v3/certs "HTTP/1.1 200 OK"
+2025-11-28 08:23:05 - INFO - Пользователь успешно добавлен с ID: 24
+2025-11-28 08:23:05 - INFO - Сессия добавлена
