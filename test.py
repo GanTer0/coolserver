@@ -33,3 +33,10 @@
 #         })
 #         data = response.json()
 #         assert data["error"] == 'Эта почта уже используется'
+
+
+
+from datetime import datetime, timezone
+
+now = datetime.now(timezone.utc)
+print(now)

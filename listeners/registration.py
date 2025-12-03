@@ -1,16 +1,20 @@
 from fastapi import APIRouter, Request, HTTPException,  status
 from fastapi.templating import Jinja2Templates
-from database.main import insert_table_user, check_user_exists, insert_table_user_session, check_user_session
+from database.main import insert_table_user, check_user_exists, insert_table_user_session, check_user_session_by_id, update_user_session_simple, update_user_session_current
 
 from authlib.integrations.starlette_client import OAuth
 from starlette.requests import Request
 from fastapi.responses import RedirectResponse
 import secrets
+from datetime import datetime, timezone, timedelta
+
+from servis.log import logger
 
 from dotenv import load_dotenv
 import os
 
-load_dotenv('.\config.env')
+load_dotenv('./config.env')
+# session_time_life = os.getenv('session_time_life')
 
 users_router = APIRouter(prefix="/authentication", tags=["users"])
 templates = Jinja2Templates(directory="frontend")
@@ -46,21 +50,47 @@ async def auth_callback(request: Request):
         user_info = token.get('userinfo')
 
         if user_info and user_info.get('email_verified'):
-            # Сохраняем данные пользователя
-            if not check_user_exists(user_info['email']):
-                id = insert_table_user(user_info['email'], user_info.get('name'), user_info.get('family_name'), user_info.get('picture'))
+            user, user_id = check_user_exists(user_info['email'])
+            logger.info(f'Пользователь, {user}')
 
-            session_id = secrets.token_urlsafe(40)
-            print(id)
-            insert_table_user_session(session_id, id, {'data': 'cool'})
-            request.session['session_id'] = session_id
+            # Если пользователя нет в бд
+            if not user:
+                user_id = insert_table_user(user_info['email'], user_info.get('name'), user_info.get('family_name'), user_info.get('picture'))
+
+            # Есть ли у него сессия
+            session, id_session, last_active = check_user_session_by_id(user_id)
+            logger.info(f'Сессия, {session}')
+            
+            now = datetime.now(timezone.utc)
+        
+            new_session_id = secrets.token_urlsafe(40)
+            # Если сессия существует
+            if session:
+                now = datetime.now(timezone.utc)
+                last_active_utc = last_active.astimezone(timezone.utc)
+                time_difference = now - last_active_utc
+
+                logger.info(f'последний заход привёдёный к uts, {last_active_utc}')
+                logger.info(f'Разница: {time_difference}')
+
+                # Если время жизни сесси не вышло
+                if time_difference <= timedelta(seconds=3600):
+                    update_user_session_simple(id_session, new_session_id)
+                    request.session['db_session_id'] = new_session_id
+
+                    return RedirectResponse(url='http://127.0.0.1:8000/profile', status_code=status.HTTP_302_FOUND)
+                else:
+                    logger.info("Время жизни сессии вышло")
+                    update_user_session_current(id_session)
+
+            insert_table_user_session(new_session_id, user_id, {'data': 'cool'})
+            request.session['db_session_id'] = new_session_id
 
             return RedirectResponse(url='http://127.0.0.1:8000/profile', status_code=status.HTTP_302_FOUND)
 
-
-        
         raise HTTPException(400, "Email not verified")
         
     except Exception as e:
         print(f"Auth error: {str(e)}")
         raise HTTPException(400, f"Authentication failed: {str(e)}")
+    
