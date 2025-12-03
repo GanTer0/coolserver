@@ -97,21 +97,29 @@ def check_user_session(session_id: str) -> bool:
 from datetime import datetime
 from typing import Tuple, Optional
 
-def check_user_session_by_id(user_id: str) -> Tuple[bool, Optional[str], Optional[datetime]]:
+def check_user_session_by_id(user_id: bool, id: str) -> Tuple[bool, Optional[str], Optional[datetime]]:
     """
     Проверяет наличие текущей сессии пользователя (is_current = True)
     Возвращает: (exists, session_id, last_seen_at)
     """
     with engine.connect() as conn:
         try:
-            stmt = select(
-                test_user_session.c.session_id,
-                test_user_session.c.last_seen_at
-            ).where(
-                (test_user_session.c.user_id == user_id) &
-                (test_user_session.c.is_current == True)
-            ).limit(1)  # на всякий случай, вдруг дубли
-
+            if user_id:
+                stmt = select(
+                    test_user_session.c.session_id,
+                    test_user_session.c.last_seen_at
+                ).where(
+                    (test_user_session.c.user_id == id) &
+                    (test_user_session.c.is_current == True)
+                ).limit(1)  # на всякий случай, вдруг дубли
+            else:
+                stmt = select(
+                    test_user_session.c.session_id,
+                    test_user_session.c.last_seen_at
+                ).where(
+                    (test_user_session.c.session_id == id) &
+                    (test_user_session.c.is_current == True)
+                ).limit(1)
             row = conn.execute(stmt).mappings().one_or_none()
 
             if row:
@@ -122,10 +130,6 @@ def check_user_session_by_id(user_id: str) -> Tuple[bool, Optional[str], Optiona
         except Exception as e:
             logger.error(f'Ошибка проверки текущей сессии user_id={user_id}: {e}')
             return False, None, None
-        
-def check_user_session_return_time(user_id: str) -> tuple[bool, str | None]:
-    """Проверяет существование сессии по id и возвращает время последней активности"""
-
         
 def update_user_session_simple(old_session_id: str, new_session_id: str) -> bool:
     """Обновляет session_id на новое значение"""
@@ -171,7 +175,7 @@ def update_session_time(session_id) -> bool:
             return False
         
 def update_user_session_current(session_id: str) -> bool:
-    """Обновляет session_id на новое значение"""
+    """Обновляет действительность сессии по айди сессии"""
     with engine.connect() as conn:
         try:
             stmt = (
@@ -186,6 +190,53 @@ def update_user_session_current(session_id: str) -> bool:
             return result.rowcount > 0
                 
         except Exception as e:
-            logger.error(f'Ошибка обновления действености сесии: {e}')
+            logger.error(f'Ошибка обновления действености сессии: {e}')
             conn.rollback()
             return False
+        
+
+def get_UserId_by_SessionId(session_id: str) -> str:
+    """Получает userid by sessionId"""
+    with engine.connect() as conn:
+        try:
+            stmt = select(
+                test_user_session.c.user_id,
+            ).where(
+                (test_user_session.c.session_id == session_id) &
+                (test_user_session.c.is_current == True)
+            ).limit(1)  # на всякий случай, вдруг дубли
+    
+            row = conn.execute(stmt).mappings().one_or_none()
+
+            if row:
+                return row["user_id"]
+            else:
+                return False
+
+        except Exception as e:
+            logger.error(f'Ошибка получения айди по сессион айди: {e}')
+
+
+def get_info_user(user_id: str) -> tuple:
+    """Получает Имя Фамилию Почту аватарку дату регистарции по user_id"""
+    with engine.connect() as conn:
+        try:
+            stmt = select(
+                test_user.c.name,
+                test_user.c.family_name,
+                test_user.c.email,
+                test_user.c.avatar,
+                test_user.c.date
+            ).where(
+                (test_user.c.id == user_id) 
+            ).limit(1)  # на всякий случай, вдруг дубли
+    
+            row = conn.execute(stmt).mappings().one_or_none()
+
+            if row:
+                return row
+            else:
+                return False
+
+        except Exception as e:
+            logger.error(f'Ошибка получения данных пользователя: {e}')

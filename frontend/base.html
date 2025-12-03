@@ -49,8 +49,12 @@
                     <ul>
                         <li>
                             <a href="/">Главная</a>
-                            <a href="/authentication/login">Регистрация/Авторизация</a>
-                            <a href="/profile">профиль</a>
+                            {% if not session %}
+                                <a href="/authentication/login">Регистрация/Авторизация</a>
+                            {% else %}
+                                <a href="/profile">Профиль</a>
+                                <a href="/logout">Выйти</a>
+                            {% endif %}
                             <a href="/docs">Swager</a>
                         </li>
                     </ul>
