@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://www.google.com/recaptcha/api.js?render=6LfgNSAsAAAAAKj8Yww61r53JZlgZXkimh6tB4KQ"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %} {% endblock %}</title>
@@ -48,6 +49,7 @@
                 <nav>
                     <ul>
                         <li>
+                            <button onclick="sendRequest()">Отправить</button>
                             <a href="/">Главная</a>
                             {% if not session %}
                                 <a href="/authentication/login">Регистрация/Авторизация</a>
@@ -65,5 +67,35 @@
     {% block main %}
     <h1>дефолт шняга которая заменится если не оставить пустым после наследования</h1>
     {% endblock %}
+
+    <script>
+    console.log("grecaptcha:", typeof grecaptcha);
+    function sendRequest() {
+        grecaptcha.ready(function() {
+            grecaptcha.execute('6LfgNSAsAAAAAKj8Yww61r53JZlgZXkimh6tB4KQ', {action: 'submit'})
+                .then(function(token) {
+                    // Отправляем token на backend FastAPI
+                    fetch('/verify-recaptcha', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({token: token})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        if (data.success) {
+                            alert("Проверка пройдена!");
+                        } else {
+                            alert("reCAPTCHA не пройдена!");
+                        }
+                    });
+                });
+        });
+    }
+    </script>
+
 </body>
 </html>
+

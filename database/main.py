@@ -1,8 +1,5 @@
-# database/main.py
 from sqlalchemy import create_engine, MetaData, Table, exists, select, update
 from servis.log import logger
-
-from sqlalchemy.types import TIMESTAMP
 
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -25,7 +22,6 @@ def insert_table_user(email: str, name: str, family_name: str, avatar: str) -> i
     """Добавляет пользователя и возвращает его ID"""
     with engine.connect() as conn:
         try:
-            # Используем RETURNING с вашим стилем
             result = conn.execute(
                 test_user.insert().returning(test_user.c.id).values(
                     email=email,
@@ -35,7 +31,6 @@ def insert_table_user(email: str, name: str, family_name: str, avatar: str) -> i
                 )
             )
             
-            # Получаем ID
             user_id = result.scalar()
             conn.commit()
             
@@ -63,8 +58,6 @@ def insert_table_user_session(
         session_id: str,
         user_id: str,
         session_data: dict,
-        created_at: TIMESTAMP = None,
-        last_seen_at: TIMESTAMP = None
         ) -> bool:
     """Добавляет сесиию"""
     with engine.connect() as conn:
@@ -94,10 +87,7 @@ def check_user_session(session_id: str) -> bool:
             logger.error(f'Ошибка проверки сессии, по session_id: {e}')
             return False
 
-from datetime import datetime
-from typing import Tuple, Optional
-
-def check_user_session_by_id(user_id: bool, id: str) -> Tuple[bool, Optional[str], Optional[datetime]]:
+def check_user_session_by_id(user_id: bool, id: str) -> tuple:
     """
     Проверяет наличие текущей сессии пользователя (is_current = True)
     Возвращает: (exists, session_id, last_seen_at)
@@ -151,7 +141,6 @@ def update_user_session_simple(old_session_id: str, new_session_id: str) -> bool
             conn.rollback()
             return False
 
-
 def update_session_time(session_id) -> bool:
     """Обновляет последнее время активности в сесиии"""
     with engine.connect() as conn:
@@ -194,7 +183,6 @@ def update_user_session_current(session_id: str) -> bool:
             conn.rollback()
             return False
         
-
 def get_UserId_by_SessionId(session_id: str) -> str:
     """Получает userid by sessionId"""
     with engine.connect() as conn:
@@ -215,7 +203,6 @@ def get_UserId_by_SessionId(session_id: str) -> str:
 
         except Exception as e:
             logger.error(f'Ошибка получения айди по сессион айди: {e}')
-
 
 def get_info_user(user_id: str) -> tuple:
     """Получает Имя Фамилию Почту аватарку дату регистарции по user_id"""

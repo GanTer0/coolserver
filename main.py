@@ -9,6 +9,7 @@ from servis.auth import get_current_user, cheak_session_current
 from database.main import check_user_session, update_session_time
 from dotenv import load_dotenv
 import os
+
 # Удаление мусорных логов
 import logging
 logging.getLogger("uvicorn.access").addFilter(
@@ -75,7 +76,7 @@ async def user_profile(request: Request, user: dict = Depends(get_current_user))
         "profile.html",
         {
         'session': True,
-        'date': user
+        'date': user,
         }
     )
 
@@ -84,3 +85,30 @@ async def user_profile(request: Request):
     if 'db_session_id' in request.session:
         del request.session['db_session_id']
     return RedirectResponse(url='http://127.0.0.1:8000', status_code=status.HTTP_302_FOUND)
+
+from pydantic import BaseModel
+import httpx
+
+class TokenRequest(BaseModel):
+    token: str
+
+@app.post("/verify-recaptcha")
+async def verify_recaptcha(data: TokenRequest):
+    payload = {
+        "secret": '6LfgNSAsAAAAAGd7vXOMw6XZORz73I0B8262uSg_',
+        "response": data.token
+    }
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post('https://www.google.com/recaptcha/api/siteverify', data=payload)
+        result = r.json()
+
+    # возвращает score 0.0–1.0
+    success = result.get("success") and result.get("score", 0) >= 0.5
+
+    return {
+        "success": success,
+        "score": result.get("score"),
+        "action": result.get("action"),
+        "raw": result
+    }
